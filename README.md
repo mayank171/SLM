@@ -102,7 +102,7 @@ This relationship is shown in the GPT-3 scaling laws.
 
 # 📊 GPT-3 Scaling Law Graph (Actual Image)
 
-![GPT-3 Scaling Laws](https://opendatascience.com/wp-content/uploads/2020/08/gpt3header-1.png)))
+![GPT-3 Scaling Laws](https://opendatascience.com/wp-content/uploads/2020/08/gpt3header-1.png)
 
 ---
 
@@ -128,7 +128,7 @@ So researchers keep building bigger models to discover new emergent skills.
 
 # 📈 Emergent Abilities Graph (Actual Image)
 
-![Emergent Abilities](https://i0.wp.com/bdtechtalks.com/wp-content/uploads/2022/08/LLMs-emergent-abilities.png?ssl=1))
+![Emergent Abilities](https://i0.wp.com/bdtechtalks.com/wp-content/uploads/2022/08/LLMs-emergent-abilities.png?ssl=1)
 
 ---
 
@@ -173,11 +173,3 @@ Ideal for constrained hardware
 
 ---
 
-# 🧾 Summary
-
-- An alien with no language knowledge can use math to model next-word prediction.  
-- A Large Language Model is a mathematical engine that predicts the next word.  
-- LLMs are “large” because they contain billions of parameters.  
-- Next token prediction is probabilistic, not deterministic.  
-- Larger models → better performance → emergent capabilities.  
-- If we want domain-specific models, we build Small Language Models (SLMs) instead.

@@ -102,7 +102,7 @@ This relationship is shown in the GPT-3 scaling laws.
 
 # 📊 GPT-3 Scaling Law Graph (Actual Image)
 
-![GPT-3 Scaling Laws]([[https://miro.medium.com/v2/resize:fit:1358/1*aN9lZ_rPFlE0YyqS-gtnug.png](https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fbdtechtalks.com%2F2025%2F07%2F14%2Fllm-emergent-intelligence-study%2F&ved=0CBUQjRxqFwoTCMCE4Yf3oZEDFQAAAAAdAAAAABAI&opi=89978449](https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fopendatascience.com%2Fintroduction-to-gpt-3%2F&ved=0CBUQjRxqFwoTCLDOmu_3oZEDFQAAAAAdAAAAABAI&opi=89978449)))
+![GPT-3 Scaling Laws](https://opendatascience.com/wp-content/uploads/2020/08/gpt3header-1.png)))
 
 ---
 
@@ -128,7 +128,7 @@ So researchers keep building bigger models to discover new emergent skills.
 
 # 📈 Emergent Abilities Graph (Actual Image)
 
-![Emergent Abilities]([https://i.imgur.com/oXwz0kU.png](https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fbdtechtalks.com%2F2025%2F07%2F14%2Fllm-emergent-intelligence-study%2F&ved=0CBUQjRxqFwoTCMCE4Yf3oZEDFQAAAAAdAAAAABAI&opi=89978449))
+![Emergent Abilities](https://i0.wp.com/bdtechtalks.com/wp-content/uploads/2022/08/LLMs-emergent-abilities.png?ssl=1))
 
 ---
 

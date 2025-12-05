@@ -190,26 +190,23 @@ flowchart LR
 
 ## 2. Data Preprocessing & Tokenization
 
-### ❌ Word-based Tokenization
+### Word-based Tokenization
 
--   Huge vocabulary\
--   OOV (Out-of-Vocabulary) issues\
--   Misspelled or rare words cannot be encoded\
--   Slow & brittle
+-   High vocab
+-   OOV issues
+-   Slow and brittle
 
-### ❌ Character-based Tokenization
+### Character-based Tokenization
 
--   Small vocabulary (\~26--100 tokens)\
--   Very long sequences → slower training\
--   Loses semantic meaning
+-   Small vocab
+-   Long sequences
+-   Loses semantic structure
 
-### ✅ Subword Tokenization (BPE)
+### Subword Tokenization (BPE)
 
-Modern LLMs use BPE because it: - Solves OOV\
-- Preserves meaning\
-- Efficient vocab size\
-- Faster training\
-- Works with misspellings
+-   Solves OOV
+-   Preserves meaning
+-   Efficient vocab
 
 ``` mermaid
 flowchart TD
@@ -229,7 +226,7 @@ token IDs\
 
 ``` mermaid
 flowchart LR
-    A[All Token IDs] --> B[Split 80/20]
+    A["All Token IDs"] --> B[Split 80/20]
     B --> C[Train Tokens 80%]
     B --> D[Validation Tokens 20%]
     C --> E[train.bin (memmap)]

@@ -173,3 +173,61 @@ Ideal for constrained hardware
 
 ---
 
+# Building a Small Language Model (SLM)
+
+## 1. Choosing a Dataset
+
+TinyStories dataset is used as it captures grammar, syntax, and story
+structure in simple language ideal for small models.
+
+``` mermaid
+flowchart LR
+    A[Raw Text Dataset (TinyStories)] --> B[Clean + Normalize]
+    B --> C[Tokenization]
+    C --> D[Token ID Sequences]
+    D --> E[Train/Val Split]
+    E --> F[train.bin / val.bin]
+```
+
+## 2. Data Preprocessing & Tokenization
+
+### Word-based Tokenization
+
+-   High vocab
+-   OOV issues
+-   Slow and brittle
+
+### Character-based Tokenization
+
+-   Small vocab
+-   Long sequences
+-   Loses semantic structure
+
+### Subword Tokenization (BPE)
+
+-   Solves OOV
+-   Preserves meaning
+-   Efficient vocab
+
+``` mermaid
+flowchart TD
+    A[Characters] --> B[BPE Merge Rules]
+    B --> C[Common Subwords Learned]
+    C --> D[Final Vocabulary]
+    D --> E[Token IDs Assigned]
+```
+
+## 3. Text to Token IDs
+
+Each story becomes a list of integers.
+
+## 4. Train/Validation Split
+
+``` mermaid
+flowchart LR
+    A[All Token IDs] --> B[Shuffle / Sequential Split]
+    B --> C[Train Tokens 80%]
+    B --> D[Val Tokens 20%]
+    C --> E[train.bin (memmap)]
+    D --> F[val.bin (memmap)]
+```

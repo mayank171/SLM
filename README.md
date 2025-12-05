@@ -172,7 +172,6 @@ Cheaper to train
 Ideal for constrained hardware
 
 ---
-
 # Building a Small Language Model (SLM)
 
 ## 1. Choosing a Dataset
@@ -182,52 +181,57 @@ structure in simple language ideal for small models.
 
 ``` mermaid
 flowchart LR
-    A[Raw Text Dataset (TinyStories)] --> B[Clean + Normalize]
+    A[Raw Text Dataset (TinyStories)] --> B[Clean & Normalize]
     B --> C[Tokenization]
     C --> D[Token ID Sequences]
-    D --> E[Train/Val Split]
-    E --> F[train.bin / val.bin]
+    D --> E[Train/Validation Split]
+    E --> F[train.bin and val.bin]
 ```
 
 ## 2. Data Preprocessing & Tokenization
 
-### Word-based Tokenization
+### ❌ Word-based Tokenization
 
--   High vocab
--   OOV issues
--   Slow and brittle
+-   Huge vocabulary\
+-   OOV (Out-of-Vocabulary) issues\
+-   Misspelled or rare words cannot be encoded\
+-   Slow & brittle
 
-### Character-based Tokenization
+### ❌ Character-based Tokenization
 
--   Small vocab
--   Long sequences
--   Loses semantic structure
+-   Small vocabulary (\~26--100 tokens)\
+-   Very long sequences → slower training\
+-   Loses semantic meaning
 
-### Subword Tokenization (BPE)
+### ✅ Subword Tokenization (BPE)
 
--   Solves OOV
--   Preserves meaning
--   Efficient vocab
+Modern LLMs use BPE because it: - Solves OOV\
+- Preserves meaning\
+- Efficient vocab size\
+- Faster training\
+- Works with misspellings
 
 ``` mermaid
 flowchart TD
     A[Characters] --> B[BPE Merge Rules]
-    B --> C[Common Subwords Learned]
+    B --> C[Frequent Subwords]
     C --> D[Final Vocabulary]
     D --> E[Token IDs Assigned]
 ```
 
 ## 3. Text to Token IDs
 
-Each story becomes a list of integers.
+After tokenizer training: - Each story becomes a sequence of integer
+token IDs\
+- All stories are concatenated into one long token stream
 
 ## 4. Train/Validation Split
 
 ``` mermaid
 flowchart LR
-    A[All Token IDs] --> B[Shuffle / Sequential Split]
+    A[All Token IDs] --> B[Split 80/20]
     B --> C[Train Tokens 80%]
-    B --> D[Val Tokens 20%]
+    B --> D[Validation Tokens 20%]
     C --> E[train.bin (memmap)]
     D --> F[val.bin (memmap)]
 ```

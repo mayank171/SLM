@@ -229,6 +229,6 @@ flowchart LR
     A["All Token IDs"] --> B[Split 80/20]
     B --> C[Train Tokens 80%]
     B --> D[Validation Tokens 20%]
-    C --> E[train.bin (memmap)]
-    D --> F[val.bin (memmap)]
+    C --> E["train.bin (memmap)"]
+    D --> F["val.bin (memmap)"]
 ```

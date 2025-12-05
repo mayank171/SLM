@@ -181,7 +181,7 @@ structure in simple language ideal for small models.
 
 ``` mermaid
 flowchart LR
-    A[Raw Text Dataset (TinyStories)] --> B[Clean & Normalize]
+    A["Raw Text Dataset (TinyStories)"] --> B[Clean & Normalize]
     B --> C[Tokenization]
     C --> D[Token ID Sequences]
     D --> E[Train/Validation Split]

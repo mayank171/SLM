@@ -310,7 +310,7 @@ flowchart LR
 
 Here we are tokenizing and creating train.bin file:
 
-'''
+```
 !pip install tiktoken
 import tiktoken
 import os
@@ -347,7 +347,7 @@ if not os.path.exists("train.bin"):
       arr[idx:idx+len(arr_batch)]=arr_batch
       idx+=len(arr_batch)
     arr.flush()
-'''
+```
 
 # Creating Input-Output Pairs from Dataset
 

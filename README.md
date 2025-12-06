@@ -513,48 +513,6 @@ flowchart LR
 
 ---
 
-## Deep Dive: How Parameters Get Updated
-
-### The Learning Process
-
-1. **Forward Pass:**
-   - Input: `[1, 11, 15, 24]`
-   - Model predicts: `[45, 67, 23, 89]`
-   - Ground truth: `[11, 15, 24, 43]`
-
-2. **Calculate Loss:**
-   - Compare predictions vs ground truth
-   - Loss function (Cross-Entropy) measures "wrongness"
-   - Higher loss = worse predictions
-
-3. **Backward Pass (Backpropagation):**
-   - Calculate gradient of loss with respect to each parameter
-   - Gradients tell us: "change this parameter by this much"
-
-4. **Update Parameters:**
-   - Adjust weights to reduce loss
-   - Learning rate controls step size
-   - `new_weight = old_weight - learning_rate × gradient`
-
-### Visualizing Parameter Updates
-
-```
-Iteration 1:
-Prediction: "the" (wrong)
-Loss: 5.2
-→ Update parameters
-
-Iteration 2:
-Prediction: "a" (closer!)
-Loss: 3.1
-→ Update parameters
-
-Iteration 100:
-Prediction: "is" (correct!)
-Loss: 0.3
-→ Parameters learned!
-```
-
 ---
 
 ## Historical Context & Model Sizes

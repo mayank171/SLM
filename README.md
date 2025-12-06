@@ -308,7 +308,7 @@ flowchart LR
 - Typical size: Millions to billions of tokens
 - 
 
-Here we are tokenizing and creating train.bin file:
+Here we are tokenizing and creating train.bin and validation.bin file:
 
 ```python
 !pip install tiktoken
@@ -608,7 +608,7 @@ flowchart LR
 
 ---
 
-Here we a re creating input output pairs:
+Here we are creating input output pairs:
 ```python
 def get_batch(split):
   if split=='train':

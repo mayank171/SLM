@@ -306,3 +306,320 @@ flowchart LR
 - Memory-mapped (memmap) for efficient loading
 - Faster than loading text files during training
 - Typical size: Millions to billions of tokens
+- 
+
+
+
+# Creating Input-Output Pairs from Dataset
+
+## Core Concepts: Context Window & Batch Size
+
+Before creating training data, we need to understand two fundamental parameters:
+
+### 1. Context Window (Sequence Length)
+**Definition:** The number of tokens the model looks at simultaneously to predict the next token.
+
+**Why it matters:**
+- Determines how much "memory" the model has
+- Larger context = model sees more history but requires more computation
+- Smaller context = faster training but limited understanding
+
+### 2. Batch Size
+**Definition:** The number of training examples processed together in one forward pass.
+
+**Why it matters:**
+- Affects training speed and memory usage
+- Larger batches = more stable gradients but more GPU memory needed
+- Smaller batches = less memory but noisier training
+
+---
+
+## Example: Building Input-Output Pairs
+
+### The Text
+```
+"Bali is a captivating Indonesian island known for its rich Hindu culture, 
+reflected in elaborate dances and temples like the Mother Temple, Besakih..."
+```
+
+### Setting: Context Window = 4
+
+Let's see how this works step by step:
+
+#### Step 1: Tokenize the Text
+```
+Text:   "Bali is a captivating Indonesian..."
+Tokens: [1, 11, 15, 24, 43, 52, 67, ...]
+         ↑   ↑   ↑   ↑   ↑
+       Bali is  a  capt Indo
+```
+
+#### Step 2: Create Sliding Window
+```
+Input:  [1,  11, 15, 24]  →  "Bali is a captivating"
+Output: [11, 15, 24, 43]  →  "is a captivating Indonesian"
+```
+
+**At first glance:** It looks like ONE prediction task.
+
+**Reality:** It contains **4 simultaneous prediction tasks!**
+
+---
+
+## The Hidden Magic: Multiple Predictions in One
+
+### Breaking Down the 4 Prediction Tasks
+
+```mermaid
+flowchart TD
+    A["Input: [1, 11, 15, 24]"] --> B["Position 1: [1] → predict 11"]
+    A --> C["Position 2: [1, 11] → predict 15"]
+    A --> D["Position 3: [1, 11, 15] → predict 24"]
+    A --> E["Position 4: [1, 11, 15, 24] → predict 43"]
+    
+    B --> F["Task 1: 'Bali' → 'is'"]
+    C --> G["Task 2: 'Bali is' → 'a'"]
+    D --> H["Task 3: 'Bali is a' → 'captivating'"]
+    E --> I["Task 4: 'Bali is a captivating' → 'Indonesian'"]
+```
+
+### The 4 Prediction Tasks Explained
+
+| Task | Input Tokens | Input Text | Target | Target Text |
+|------|-------------|------------|--------|-------------|
+| 1 | `[1]` | "Bali" | `11` | "is" |
+| 2 | `[1, 11]` | "Bali is" | `15` | "a" |
+| 3 | `[1, 11, 15]` | "Bali is a" | `24` | "captivating" |
+| 4 | `[1, 11, 15, 24]` | "Bali is a captivating" | `43` | "Indonesian" |
+
+### Ground Truth vs Model Predictions
+
+**Ground Truth (What we want):**
+```
+Position 1: "is"
+Position 2: "a"
+Position 3: "captivating"
+Position 4: "Indonesian"
+```
+
+**Model Prediction (Before training):**
+```
+Position 1: "the"      ❌
+Position 2: "capital"  ❌
+Position 3: "of"       ❌
+Position 4: "Indonesia" ❌
+```
+
+**Goal:** Adjust the model's **parameters** (the internal knobs/weights) so predictions match ground truth.
+
+---
+
+## Batching: Processing Multiple Examples Together
+
+### Batch Structure
+
+```
+Context Window = 4 tokens
+Batch Size = 4 examples
+
+INPUT (X):
+┌─────────────────────┐
+│ x1: [1,  11, 15, 24]│  ← Example 1
+│ x2: [11, 13, 14, 17]│  ← Example 2
+│ x3: [6,  8,  9,  18]│  ← Example 3
+│ x4: [1,  7,  6,  7] │  ← Example 4
+└─────────────────────┘
+    ↓   ↓   ↓   ↓
+   col col col col
+    1   2   3   4
+
+OUTPUT (Y):
+┌─────────────────────┐
+│ y1: [11, 15, 24, 43]│  ← Targets for Example 1
+│ y2: [13, 14, 17, 4] │  ← Targets for Example 2
+│ y3: [8,  9,  18, 20]│  ← Targets for Example 3
+│ y4: [7,  6,  7,  9] │  ← Targets for Example 4
+└─────────────────────┘
+```
+
+**Matrix Dimensions:**
+- Number of **rows** = Batch Size (4)
+- Number of **columns** = Context Window (4)
+- **Total predictions per batch** = 4 rows × 4 positions = **16 predictions**
+
+---
+
+## Why LLMs are Called "Autoregressive"
+
+### Autoregressive = Output Becomes Next Input
+
+```mermaid
+flowchart LR
+    A["[1, 11, 15, 24]"] -->|predict| B["43"]
+    B -->|append| C["[11, 15, 24, 43]"]
+    C -->|predict| D["52"]
+    D -->|append| E["[15, 24, 43, 52]"]
+    E -->|predict| F["67"]
+    F -->|continues...| G["..."]
+```
+
+**Step-by-step generation:**
+```
+Step 1: [1, 11, 15, 24] → predict 43 → "Indonesian"
+Step 2: [11, 15, 24, 43] → predict 52 → "island"
+Step 3: [15, 24, 43, 52] → predict 67 → "known"
+...and so on
+```
+
+**Key Insight:** Each prediction feeds back as input for the next prediction. The model generates text one token at a time, using its own previous outputs.
+
+---
+
+## Why LLMs are Called "Self-Supervised"
+
+### Self-Supervised = Data Labels Itself
+
+**Traditional Supervised Learning:**
+```
+Humans label data:
+Image → "cat" ✓
+Email → "spam" ✓
+Text → "positive sentiment" ✓
+```
+
+**Self-Supervised Learning (LLMs):**
+```
+Data creates its own labels:
+Input:  "Bali is a"     → Label: "captivating" (next word)
+Input:  "The cat sat"   → Label: "on" (next word)
+Input:  "Python is a"   → Label: "programming" (next word)
+```
+
+**No human annotation needed!** The model learns by:
+1. Taking any text
+2. Creating input (first N tokens)
+3. Using the next token as the label
+4. Repeat for entire dataset
+
+```mermaid
+flowchart LR
+    A[Raw Text:<br/>'Bali is a captivating island'] --> B[Automatic Splitting]
+    B --> C[Input: 'Bali is a']
+    B --> D[Label: 'captivating']
+    C --> E[Training Pair Created]
+    D --> E
+    E --> F[No Humans Needed!]
+```
+
+---
+
+## Deep Dive: How Parameters Get Updated
+
+### The Learning Process
+
+1. **Forward Pass:**
+   - Input: `[1, 11, 15, 24]`
+   - Model predicts: `[45, 67, 23, 89]`
+   - Ground truth: `[11, 15, 24, 43]`
+
+2. **Calculate Loss:**
+   - Compare predictions vs ground truth
+   - Loss function (Cross-Entropy) measures "wrongness"
+   - Higher loss = worse predictions
+
+3. **Backward Pass (Backpropagation):**
+   - Calculate gradient of loss with respect to each parameter
+   - Gradients tell us: "change this parameter by this much"
+
+4. **Update Parameters:**
+   - Adjust weights to reduce loss
+   - Learning rate controls step size
+   - `new_weight = old_weight - learning_rate × gradient`
+
+### Visualizing Parameter Updates
+
+```
+Iteration 1:
+Prediction: "the" (wrong)
+Loss: 5.2
+→ Update parameters
+
+Iteration 2:
+Prediction: "a" (closer!)
+Loss: 3.1
+→ Update parameters
+
+Iteration 100:
+Prediction: "is" (correct!)
+Loss: 0.3
+→ Parameters learned!
+```
+
+---
+
+## Historical Context & Model Sizes
+
+### Context Window Evolution
+
+| Model | Year | Context Window | Parameters |
+|-------|------|----------------|------------|
+| GPT-1 | 2018 | 512 tokens | 117M |
+| GPT-2 | 2019 | **1,024 tokens** | 1.5B |
+| GPT-3 | 2020 | 2,048 tokens | 175B |
+| GPT-4 | 2023 | 8,192-32,768 tokens | Unknown |
+| Claude 3 | 2024 | 200,000 tokens | Unknown |
+
+**GPT-2's 1,024 token context window** was revolutionary in 2019:
+- Could "remember" ~750-800 words at once
+- About 3-4 paragraphs of context
+- Enabled coherent long-form generation
+
+---
+
+## Practical Implications
+
+### Context Window Trade-offs
+
+**Smaller Context (e.g., 128 tokens):**
+- ✅ Faster training
+- ✅ Less memory usage
+- ✅ Good for simple tasks
+- ❌ Limited "memory"
+- ❌ Can't handle long conversations
+
+**Larger Context (e.g., 4,096 tokens):**
+- ✅ Better long-range understanding
+- ✅ Can handle complex documents
+- ✅ More coherent outputs
+- ❌ Quadratic memory growth (O(n²))
+- ❌ Much slower training
+
+### Batch Size Trade-offs
+
+**Smaller Batch (e.g., 4-16):**
+- ✅ Fits in less GPU memory
+- ✅ More frequent weight updates
+- ❌ Noisy gradients
+- ❌ Less stable training
+
+**Larger Batch (e.g., 256-1024):**
+- ✅ Smoother gradients
+- ✅ Better GPU utilization
+- ✅ More stable training
+- ❌ Requires massive GPU memory
+- ❌ Fewer weight updates per epoch
+
+---
+
+## Key Takeaways
+
+1. **Every context window contains multiple prediction tasks** - not just one!
+2. **Autoregressive** means the model uses its own outputs as future inputs
+3. **Self-supervised** means no human labeling - text labels itself
+4. **Parameters** are the knobs adjusted during training to improve predictions
+5. **Context window** determines how much history the model can "see"
+6. **Batch size** affects training speed, stability, and memory usage
+7. A single training batch can contain **batch_size × context_window** predictions
+
+---
+

@@ -608,15 +608,22 @@ flowchart LR
 
 ---
 
-## Key Takeaways
+Here we a re creating input output pairs:
+```
+def get_batch(split):
+  if split=='train':
+    data=np.memmap('train.bin', dtype=np.uint16, mode='r')
+  else:
+    data=np.memmap('validation.bin', dtype=np.uint16, mode='r')
 
-1. **Every context window contains multiple prediction tasks** - not just one!
-2. **Autoregressive** means the model uses its own outputs as future inputs
-3. **Self-supervised** means no human labeling - text labels itself
-4. **Parameters** are the knobs adjusted during training to improve predictions
-5. **Context window** determines how much history the model can "see"
-6. **Batch size** affects training speed, stability, and memory usage
-7. A single training batch can contain **batch_size × context_window** predictions
+  ix=torch.randint(len(data)-block_size, (batch_size,))
+  x=torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
+  y=torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+  if device_type == 'cuda':
+    x,y=x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
+  else:
+    x,y=x.to(device), y.to(device)
 
----
+  return x,y
+```
 

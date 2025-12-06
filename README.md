@@ -310,7 +310,7 @@ flowchart LR
 
 Here we are tokenizing and creating train.bin file:
 
-```
+```python
 !pip install tiktoken
 import tiktoken
 import os
@@ -609,7 +609,7 @@ flowchart LR
 ---
 
 Here we a re creating input output pairs:
-```
+```python
 def get_batch(split):
   if split=='train':
     data=np.memmap('train.bin', dtype=np.uint16, mode='r')

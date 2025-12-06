@@ -180,7 +180,7 @@ TinyStories dataset is used as it captures grammar, syntax, and story structure 
 
 ```mermaid
 flowchart LR
-    A[Raw Text Dataset (TinyStories)] --> B[Clean & Normalize]
+    A["Raw Text Dataset (TinyStories)"] --> B[Clean & Normalize]
     B --> C[Tokenization]
     C --> D[Token ID Sequences]
     D --> E[Train/Validation Split]
@@ -292,8 +292,8 @@ flowchart LR
     A[All Token IDs] --> B[Split 80/20]
     B --> C[Train Tokens 80%]
     B --> D[Validation Tokens 20%]
-    C --> E[train.bin (memmap)]
-    D --> F[val.bin (memmap)]
+    C --> E["train.bin (memmap)"]
+    D --> F["val.bin (memmap)"]
 ```
 
 **Why split?**

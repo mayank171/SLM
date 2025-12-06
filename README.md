@@ -310,7 +310,7 @@ flowchart LR
 
 Here we are tokenizing and creating train.bin file:
 
-'''python
+'''
 !pip install tiktoken
 import tiktoken
 import os

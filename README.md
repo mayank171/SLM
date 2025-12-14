@@ -627,3 +627,292 @@ def get_batch(split):
   return x,y
 ```
 
+# Transformer Block Architecture: A Complete Guide
+
+## Overview
+
+This document explains the architecture of a Transformer block (specifically GPT-2 style) with detailed explanations and diagrams at each step.
+
+---
+
+## 1. Input Text Tokenization
+
+**Process:** Every token/word is converted into token IDs.
+
+```mermaid
+graph LR
+    A["Input Text:<br/>'The dog chased the car'"] --> B[Tokenizer]
+    B --> C["Token IDs:<br/>[1, 11, 15, 24, 31]"]
+```
+
+---
+
+## 2. Token Embeddings
+
+**What it does:** Words are represented as vectors of numbers.
+
+**Parameters:**
+- Dictionary size: 50,257 words (hyperparameter)
+- Embedding dimension: 768
+- Token embedding matrix size: **50,257 × 768**
+- Total parameters: **~38 million**
+
+```mermaid
+graph TD
+    A["Token IDs<br/>[1, 11, 15, 24]"] --> B[Token Embedding Matrix<br/>50,257 × 768]
+    B --> C["Token ID 1 → 768-dim vector"]
+    B --> D["Token ID 11 → 768-dim vector"]
+    B --> E["Token ID 15 → 768-dim vector"]
+    B --> F["Token ID 24 → 768-dim vector"]
+```
+
+**Example:** For token ID `1`, we look up the 1st row in the token embedding matrix and get a 768-dimension vector. Similarly for `11`, `15`, `24`, etc.
+
+---
+
+## 3. Positional Embeddings
+
+**Why needed:** The order/position of words is crucial for understanding context.
+
+**Example:** 
+- *"The dog chased the car. It could not catch it."*
+- First "it" → dog
+- Second "it" → car
+
+**Parameters:**
+- Context size: 1024 (for GPT-2) - hyperparameter
+- Embedding dimension: 768
+- Position embedding matrix size: **1,024 × 768**
+- Total parameters: **~0.7 million**
+
+```mermaid
+graph TD
+    A["Position Indices<br/>[0, 1, 2, 3]"] --> B[Position Embedding Matrix<br/>1,024 × 768]
+    B --> C["Position 0 → 768-dim vector"]
+    B --> D["Position 1 → 768-dim vector"]
+    B --> E["Position 2 → 768-dim vector"]
+    B --> F["Position 3 → 768-dim vector"]
+```
+
+---
+
+## 4. Input Embeddings (Addition)
+
+**Process:** Add token embeddings + position embeddings element-wise.
+
+```mermaid
+graph LR
+    A["Token Embeddings<br/>4 × 768"] --> C["+"]
+    B["Position Embeddings<br/>4 × 768"] --> C
+    C --> D["Input Embeddings<br/>4 × 768"]
+```
+
+**Result:** We now have input embedding vectors for each word in the context window.
+
+---
+
+## 5. Initial Dropout
+
+**Purpose:** Randomly set some values to 0 to improve generalization (prevents overfitting).
+
+```mermaid
+graph LR
+    A["Input Embeddings<br/>4 × 768"] --> B[Dropout Layer]
+    B --> C["Dropped Embeddings<br/>4 × 768<br/>(some values = 0)"]
+    C --> D[Transformer Block]
+```
+
+---
+
+## 6. Transformer Block - Layer Norm 1
+
+**Purpose:** Normalize input so that mean = 0, variance = 1. This makes training smoother.
+
+```mermaid
+graph TD
+    A["Input<br/>4 × 768"] --> B[Layer Normalization]
+    B --> C["Normalized Input<br/>4 × 768<br/>(mean=0, var=1)"]
+    C --> D[Multi-head Attention]
+```
+
+---
+
+## 7. Multi-Head Attention
+
+**Critical Step:** Until now, there's no interaction between tokens. This layer enables each word to understand its context in the sentence.
+
+**Before:** Input embeddings (4 × 768)  
+**After:** Context vectors (4 × 768) - same size, but now each word knows the context!
+
+```mermaid
+graph TD
+    A["Normalized Input<br/>4 × 768<br/>(No token interaction)"] --> B[Multi-head<br/>Attention]
+    B --> C["Context Vectors<br/>4 × 768<br/>(With token interaction)"]
+    
+    style B fill:#9f6fff
+    style C fill:#90EE90
+```
+
+**Key Point:** After this block, we call them **context vectors** instead of input embeddings because each word now understands its context.
+
+---
+
+## 8. Dropout + Shortcut Connection 1
+
+**Dropout:** Again, randomly set some values to 0 for generalization.
+
+**Shortcut Connection:** Add the original input to help with smoother training (residual connection).
+
+```mermaid
+graph LR
+    A["Input"] --> B[Multi-head Attention]
+    B --> C[Dropout]
+    C --> D["+"]
+    A -.Shortcut.-> D
+    D --> E["Output<br/>4 × 768"]
+```
+
+---
+
+## 9. Layer Norm 2
+
+**Purpose:** Normalize again before the feed-forward network.
+
+```mermaid
+graph LR
+    A["After Shortcut<br/>4 × 768"] --> B[Layer Normalization]
+    B --> C["Normalized<br/>4 × 768"]
+    C --> D[Feed Forward NN]
+```
+
+---
+
+## 10. Feed Forward Neural Network
+
+**Architecture:**
+- Input layer: 768 dimensions
+- Hidden layer: 4 × 768 = **3,072 dimensions** (expansion)
+- Output layer: 768 dimensions (compression)
+
+**Why expand?** The higher dimension provides a richer space to discover more meaningful context.
+
+**Parameters per block:** 768 × (4 × 768) × 2 ≈ **4.7 million parameters**
+
+```mermaid
+graph TD
+    A["Input<br/>768 dim"] --> B["Hidden Layer<br/>3,072 dim<br/>(4 × 768)"]
+    B --> C["Output<br/>768 dim"]
+    
+    style B fill:#FFD700
+```
+
+**For batch of 4 tokens:**
+
+```mermaid
+graph LR
+    A["Input<br/>4 × 768"] --> B[Feed Forward NN]
+    B --> C["Output<br/>4 × 768<br/>(richer context)"]
+```
+
+---
+
+## 11. Dropout + Shortcut Connection 2
+
+**Final step in the transformer block:**
+
+```mermaid
+graph LR
+    A["Input"] --> B[Feed Forward NN]
+    B --> C[Dropout]
+    C --> D["+"]
+    A -.Shortcut.-> D
+    D --> E["Transformer Block Output<br/>4 × 768"]
+```
+
+---
+
+## 12. Multiple Transformer Blocks
+
+**Important:** This is just **ONE** transformer block iteration. GPT-2 has **12 such blocks stacked together**.
+
+```mermaid
+graph TD
+    A["Input Embeddings"] --> B["Transformer Block 1"]
+    B --> C["Transformer Block 2"]
+    C --> D["Transformer Block 3"]
+    D --> E["..."]
+    E --> F["Transformer Block 12"]
+    F --> G["Output"]
+    
+    style B fill:#9f6fff
+    style C fill:#9f6fff
+    style F fill:#9f6fff
+```
+
+**Total parameters in Feed Forward networks:** 12 × (768 × 4 × 768 × 2) ≈ **~40 million parameters**
+
+---
+
+## 13. Output Layer
+
+After all transformer blocks, the final output goes through:
+
+```mermaid
+graph LR
+    A["Transformer Block 12 Output<br/>4 × 768"] --> B[Final Layer Norm]
+    B --> C["Output Layer<br/>50,257 (vocab size)"]
+    C --> D["Logits Matrix<br/>for next token prediction"]
+```
+
+---
+
+## Complete Architecture Summary
+
+```mermaid
+graph TD
+    A["Tokenized Text"] --> B["Token Embeddings<br/>~38M params"]
+    A2["Positional Info"] --> C["Position Embeddings<br/>~0.7M params"]
+    B --> D["+"]
+    C --> D
+    D --> E["Input Embeddings"]
+    E --> F["Dropout"]
+    F --> G["Transformer Block 1-12<br/>~40M params in FF layers"]
+    G --> H["Final Layer Norm"]
+    H --> I["Output Layer"]
+    I --> J["Next Token Prediction"]
+    
+    style G fill:#9f6fff
+```
+
+---
+
+## Key Hyperparameters
+
+| Parameter | GPT-2 Value | Description |
+|-----------|-------------|-------------|
+| Vocabulary Size | 50,257 | Dictionary size (tokens) |
+| Embedding Dimension | 768 | Vector size for each token |
+| Context Size | 1,024 | Maximum sequence length |
+| Number of Blocks | 12 | Stacked transformer blocks |
+| FF Hidden Size | 3,072 | 4 × embedding dimension |
+
+---
+
+## Parameter Count Breakdown
+
+1. **Token Embeddings:** 50,257 × 768 ≈ 38M
+2. **Position Embeddings:** 1,024 × 768 ≈ 0.7M
+3. **Feed Forward Networks (12 blocks):** 12 × 4.7M ≈ 40M
+4. **Attention Layers:** Additional millions
+5. **Total for GPT-2:** **~117 million parameters**
+
+---
+
+## Key Concepts Summary
+
+- **Dropout:** Regularization technique to prevent overfitting
+- **Layer Norm:** Stabilizes training by normalizing inputs
+- **Shortcut Connections:** Enable gradient flow in deep networks
+- **Multi-head Attention:** Allows tokens to interact and build context
+- **Feed Forward Network:** Expands to richer representation space
+- **Context Vectors:** Embeddings enriched with contextual information
